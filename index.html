@@ -3,43 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NetOrchestra AI Dashboard v3.1</title>
+    <title>NetOrchestra AI Cockpit v3.2</title>
     <style>
         body { background-color: #0a0a0c; color: #00ff66; font-family: 'Courier New', monospace; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #00ff66; padding-bottom: 10px; width: 100%; max-width: 800px; }
+        .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #00ff66; padding-bottom: 10px; width: 100%; max-width: 1000px; }
         .header h1 { color: #ffffff; text-shadow: 0 0 10px #00ff66; margin: 0; }
-        .main-container { display: flex; flex-direction: column; gap: 20px; width: 100%; max-width: 800px; }
-        .card { background: #121216; border: 1px solid #222; border-radius: 8px; padding: 20px; }
-        .terminal-box { background-color: #000000; border: 1px solid #00ff66; border-radius: 5px; padding: 15px; height: 220px; overflow-y: auto; color: #ffffff; font-size: 14px; margin-bottom: 15px; line-height: 1.6; }
+        .main-container { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; width: 100%; max-width: 1000px; }
+        .card { background: #121216; border: 1px solid #222; border-radius: 8px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .terminal-box { background-color: #000000; border: 1px solid #00ff66; border-radius: 5px; padding: 15px; height: 250px; overflow-y: auto; color: #ffffff; font-size: 14px; margin-bottom: 15px; line-height: 1.6; }
         .input-group { display: flex; gap: 10px; }
         input[type="text"] { flex: 1; background: #1a1a24; border: 1px solid #00ff66; border-radius: 4px; padding: 12px; color: #fff; font-family: inherit; }
         button { background: #00ff66; color: #000; border: none; padding: 0 25px; font-weight: bold; border-radius: 4px; cursor: pointer; font-family: inherit; }
         button:hover { background: #ffffff; box-shadow: 0 0 15px #ffffff; }
+        
+        /* लाइव विजेट स्टाइलिंग */
+        .widget-title { color: #ff3333; font-weight: bold; margin-top: 0; text-transform: uppercase; letter-spacing: 1px; }
+        .ip-list { list-style: none; padding: 0; margin: 0; }
+        .ip-item { background: rgba(255, 51, 51, 0.1); border: 1px solid #ff3333; padding: 10px; margin-bottom: 8px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+        .no-ip { color: #888; font-style: italic; text-align: center; padding: 20px 0; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>⚡ NETORCHESTRA AI COCKPIT v3.1 ⚡</h1>
-        <p>Production-Grade Enterprise Network Automation & Security</p>
+        <h1>⚡ NETORCHESTRA AI COCKPIT v3.2 ⚡</h1>
+        <p>Enterprise Infrastructure Security Matrix & Threat Isolation Grid</p>
     </div>
 
     <div class="main-container">
         <div class="card">
             <h3>🗣️ Natural Language Command Interface</h3>
             <div class="terminal-box" id="terminal">
-                [SYSTEM] Enterprise Security Core Ready.<br>
-                [STATUS] Connection link to FastAPI middleware verified on port 8000.<br>
-                [READY] Awaiting infrastructure control matrix payload...
+                [SYSTEM] Enterprise Security Core Active.<br>
+                [STATUS] Connection link verified on port 8000.<br>
+                [READY] Enter isolation commands...
             </div>
             <div class="input-group">
                 <input type="text" id="cmdInput" placeholder="e.g., Isolate network node 192.168.1.99..." onkeypress="if(event.key === 'Enter') executeCommand()">
                 <button onclick="executeCommand()">EXECUTE</button>
             </div>
         </div>
+
+        <div class="card" style="border-color: #ff3333;">
+            <h3 class="widget-title">🛡️ Active Isolations</h3>
+            <div id="ipListContainer">
+                <div class="no-ip">Scanning Kernel ACL...</div>
+            </div>
+        </div>
     </div>
 
     <script>
+        // 1. फायरवॉल से लाइव ब्लॉक की गई IPs की लिस्ट खींचना
+        async function fetchBlockedIPs() {
+            let container = document.getElementById('ipListContainer');
+            try {
+                let response = await fetch('http://127.0.0.1:8000/api/blocked-ips');
+                let data = await response.json();
+                
+                if(!data.blocked_ips || data.blocked_ips.length === 0) {
+                    container.innerHTML = '<div class="no-ip">🟢 No active IP blocks found. Network clean.</div>';
+                    return;
+                }
+                
+                let html = '<ul class="ip-list">';
+                data.blocked_ips.forEach(ip => {
+                    html += `<div class="ip-item">
+                                <span>🛑 ${ip}</span>
+                                <span style="font-size: 10px; color: #ff3333; background: rgba(255,0,0,0.2); padding: 2px 5px; border-radius: 3px;">BLOCKED</span>
+                             </div>`;
+                });
+                html += '</ul>';
+                container.innerHTML = html;
+            } catch (error) {
+                container.innerHTML = '<div class="no-ip" style="color: #ff3333;">❌ Failed to sync with Kernel ACL.</div>';
+            }
+        }
+
+        // 2. कमांड एग्जीक्यूट करना
         async function executeCommand() {
             let inputField = document.getElementById('cmdInput');
             let input = inputField.value.trim();
@@ -47,27 +87,30 @@
             if(input === "") return;
             
             terminal.innerHTML += `<br><br><span style="color: #00ffff;">&gt; ${input}</span>`;
-            terminal.innerHTML += `<br><span style="color: #ffcc00;">🧠 [AI PROCESSING] Parsing syntax logs and verifying tokens...</span>`;
+            terminal.innerHTML += `<br><span style="color: #ffcc00;">🧠 [AI PROCESSING] Updating infrastructure matrices...</span>`;
             terminal.scrollTop = terminal.scrollHeight;
 
             try {
                 let response = await fetch(`http://127.0.0.1:8000/api/execute?command=${encodeURIComponent(input)}`);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
                 let data = await response.json();
                 
                 terminal.innerHTML += `<br><span style="color: #a0a0ff;">${data.log}</span>`;
-                // कलर कोडिंग: अगर सक्सेस है तो हरा, एरर है तो पीला/लाल
                 let resultColor = data.result.includes('✅') ? '#00ff66' : '#ffcc00';
                 terminal.innerHTML += `<br><span style="color: ${resultColor};">${data.result}</span>`;
+                
+                // 🔥 कमांड चलने के तुरंत बाद विजेट को रिफ्रेश करना ताकि लिस्ट लाइव अपडेट हो!
+                await fetchBlockedIPs();
             } catch (error) {
-                terminal.innerHTML += `<br><span style="color: #ff3333;">❌ [CRITICAL COCKPIT ERROR] Failed to communicate with Python Core API. Ensure server is active.</span>`;
+                terminal.innerHTML += `<br><span style="color: #ff3333;">❌ [CRITICAL COCKPIT ERROR] API Communication Failure.</span>`;
             }
             
             inputField.value = "";
             terminal.scrollTop = terminal.scrollHeight;
         }
+
+        // पेज लोड होते ही और हर 5 सेकंड में ऑटो-स्कैन करना
+        fetchBlockedIPs();
+        setInterval(fetchBlockedIPs, 5000);
     </script>
 </body>
 </html>
