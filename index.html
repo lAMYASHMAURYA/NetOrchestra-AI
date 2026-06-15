@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NetOrchestra AI Dashboard</title>
+    <style>
+        body { background-color: #0a0a0c; color: #00ff66; font-family: 'Courier New', monospace; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #00ff66; padding-bottom: 10px; width: 100%; max-width: 800px; }
+        .header h1 { color: #ffffff; text-shadow: 0 0 10px #00ff66; margin: 0; }
+        .main-container { display: flex; flex-direction: column; gap: 20px; width: 100%; max-width: 800px; }
+        .card { background: #121216; border: 1px solid #222; border-radius: 8px; padding: 20px; }
+        .terminal-box { background-color: #000000; border: 1px solid #00ff66; border-radius: 5px; padding: 15px; height: 200px; overflow-y: auto; color: #ffffff; font-size: 14px; margin-bottom: 15px; }
+        .input-group { display: flex; gap: 10px; }
+        input[type="text"] { flex: 1; background: #1a1a24; border: 1px solid #00ff66; border-radius: 4px; padding: 12px; color: #fff; font-family: inherit; }
+        button { background: #00ff66; color: #000; border: none; padding: 0 25px; font-weight: bold; border-radius: 4px; cursor: pointer; font-family: inherit; }
+        button:hover { background: #ffffff; box-shadow: 0 0 15px #ffffff; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>⚡ NETORCHESTRA AI COCKPIT v3.0 ⚡</h1>
+        <p>Live Connected Full-Stack Infrastructure Controller</p>
+    </div>
+
+    <div class="main-container">
+        <div class="card">
+            <h3>🗣️ AI Natural Language Command Center</h3>
+            <div class="terminal-box" id="terminal">
+                [SYSTEM] NetOrchestra UI Active.<br>
+                [READY] Enter a command to trigger Python Backend...
+            </div>
+            <div class="input-group">
+                <input type="text" id="cmdInput" placeholder="e.g., Block ip 192.168.1.99 or Check google...">
+                <button onclick="executeCommand()">EXECUTE</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function executeCommand() {
+            let input = document.getElementById('cmdInput').value.trim();
+            let terminal = document.getElementById('terminal');
+            if(input === "") return;
+            
+            terminal.innerHTML += `<br><br><span style="color: #00ffff;">&gt; ${input}</span>`;
+            terminal.innerHTML += `<br><span style="color: #ffcc00;">🧠 [AI Thinking] Consulting Cloud Engine...</span>`;
+            terminal.scrollTop = terminal.scrollHeight;
+
+            try {
+                // असली अजगर (Python) सर्वर से बात करना
+                let response = await fetch(`http://127.0.0.1:8000/api/execute?command=${encodeURIComponent(input)}`);
+                let data = await response.json();
+                
+                terminal.innerHTML += `<br><span style="color: #a0a0ff;">${data.log}</span>`;
+                terminal.innerHTML += `<br><span style="color: #00ff66;">${data.result}</span>`;
+            } catch (error) {
+                terminal.innerHTML += `<br><span style="color: #ff3333;">❌ [CONNECTION ERROR] Python Backend Server is offline!</span>`;
+            }
+            
+            document.getElementById('cmdInput').value = "";
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+    </script>
+</body>
+</html>
